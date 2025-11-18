@@ -1,1 +1,1 @@
-# EduPulse
+# Blink
