@@ -27,7 +27,7 @@ npm install
 
 ### 3. Configure environment variables
 
-Create a file called `.env.local` in the project root:
+Create a file called `.env.local` in the project root, then ask Amber for keys. 
 
 ```
 NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
