@@ -1,0 +1,198 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Blink base layout */
+.blink-root {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* Cards */
+.blink-card {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-top: 16px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+  border: 1px solid rgba(148, 163, 184, 0.4);
+}
+
+.blink-card h2 {
+  margin: 0 0 8px 0;
+  font-size: 1.1rem;
+}
+
+/* Form controls */
+.blink-field {
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.blink-label {
+  font-size: 0.9rem;
+  color: #374151;
+}
+
+.blink-input {
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  padding: 7px 9px;
+  font-size: 0.95rem;
+}
+
+.blink-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.15);
+}
+
+/* Buttons */
+.blink-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.12s ease, transform 0.08s ease;
+}
+
+.blink-btn-primary {
+  background: #2563eb;
+  color: white;
+}
+
+.blink-btn-primary:hover {
+  background: #1d4ed8;
+}
+
+.blink-btn-secondary {
+  background: #e5e7eb;
+  color: #111827;
+}
+
+.blink-btn-secondary:hover {
+  background: #d1d5db;
+}
+
+.blink-btn:active {
+  transform: translateY(1px);
+}
+
+/* Layout utilities */
+.blink-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.blink-status {
+  margin-top: 12px;
+  font-size: 0.9rem;
+  color: #4b5563;
+}
+
+/* Join page */
+.blink-join-title {
+  margin-bottom: 4px;
+}
+
+.blink-join-subtitle {
+  margin: 0 0 16px 0;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+.blink-big-button {
+  width: 100%;
+  padding: 16px;
+  font-size: 1.1rem;
+  border-radius: 999px;
+}
+
+/* Host summary */
+.blink-summary-section {
+  margin-top: 16px;
+}
+
+.blink-summary-grid {
+  margin-top: 8px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  overflow: hidden;
+  font-size: 0.9rem;
+}
+
+.blink-summary-header,
+.blink-summary-row {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr 1.5fr;
+  padding: 6px 10px;
+}
+
+.blink-summary-header {
+  background: #f3f4f6;
+  font-weight: 600;
+}
+
+.blink-summary-row:nth-child(odd) {
+  background: #ffffff;
+}
+
+.blink-summary-row:nth-child(even) {
+  background: #f9fafb;
+}
+
+/* Heatmap strip for host view */
+.blink-heatstrip {
+  display: flex;
+  gap: 3px;
+  margin-top: 10px;
+}
+
+.blink-heatcell {
+  flex: 1;
+  min-width: 6px;
+  height: 28px;
+  border-radius: 6px;
+  background: #e5e7eb;
+  transition: background-color 0.12s ease;
+}
+
+.blink-heatcell-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 0.7rem;
+  color: #6b7280;
+}
