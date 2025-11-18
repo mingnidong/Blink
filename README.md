@@ -1,4 +1,4 @@
-# Blink – Real-time Confusion Tracking
+# Blink
 
 Blink is a lightweight audience feedback tool.
 
