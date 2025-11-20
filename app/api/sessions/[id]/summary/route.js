@@ -10,7 +10,7 @@ export async function GET(request, context) {
 
   const { data: events, error } = await supabaseServer
     .from('events')
-    .select('control_id, t_offset_sec, value, is_valid')
+    .select('control_id, t_offset_sec, value, is_valid, user_id')
     .eq('session_id', sessionId);
 
   if (error) {
@@ -52,9 +52,57 @@ export async function GET(request, context) {
     });
   }
 
+  // Build participant list from session_participants (who explicitly joined)
+  const { data: spRows, error: spErr } = await supabaseServer
+    .from('session_participants')
+    .select('user_id')
+    .eq('session_id', sessionId);
+
+  const participantMap = new Map();
+  const participantIds = [];
+  if (!spErr && Array.isArray(spRows) && spRows.length > 0) {
+    for (const r of spRows) {
+      if (r.user_id) {
+        participantMap.set(r.user_id, 0); // initialize count to 0
+        participantIds.push(r.user_id);
+      }
+    }
+  }
+
+  // Count button presses only for users who joined (session_participants)
+  for (const ev of events || []) {
+    if (ev.is_valid === false) continue;
+    const isButton = ev.value == null || Number(ev.value) === 1;
+    if (!isButton) continue;
+    const uid = ev.user_id;
+    if (!uid) continue;
+    if (participantMap.has(uid)) {
+      participantMap.set(uid, (participantMap.get(uid) || 0) + 1);
+    }
+  }
+
+  const participants = [];
+  if (participantIds.length > 0) {
+    const { data: profiles, error: pErr } = await supabaseServer
+      .from('profiles')
+      .select('id, email, display_name')
+      .in('id', participantIds);
+
+    const profMap = new Map();
+    if (!pErr && profiles) {
+      for (const p of profiles) profMap.set(p.id, p);
+    }
+
+    for (const uid of participantIds) {
+      const p = profMap.get(uid) || { id: uid, email: null, display_name: null };
+      participants.push({ userId: uid, email: p.email, displayName: p.display_name, count: participantMap.get(uid) || 0 });
+    }
+  }
+
   return NextResponse.json({
     bucketSize,
     buttonSeries,
     sliderSeries
+    ,participants
   });
 }

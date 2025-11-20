@@ -33,6 +33,21 @@ export default function JoinPage() {
       }
       const data = await res.json();
       setSessionInfo(data);
+      // If user is present locally, register them as a session participant
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        const localUser = stored ? JSON.parse(stored) : null;
+        if (localUser && localUser.id) {
+          // Upsert participant record (fire-and-forget)
+          fetch(`/api/sessions/${data.sessionId}/participants`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: localUser.id })
+          }).catch(() => {});
+        }
+      } catch {
+        // ignore
+      }
     }
     load();
   }, [code]);
@@ -88,32 +103,35 @@ export default function JoinPage() {
           Code: <strong>{code}</strong>
         </p>
         {user ? (
-          <p style={{ fontSize: '0.9rem', marginBottom: 12 }}>
-            You are: <strong>{user.display_name || user.email}</strong>
-          </p>
-        ) : (
-          <p style={{ fontSize: '0.9rem', color: '#b91c1c', marginBottom: 12 }}>
-            No local account. Go back to the home page and register your email.
-          </p>
-        )}
-
-        {mainControl ? (
           <>
-            <p style={{ fontSize: '0.9rem', marginBottom: 10 }}>
-              Tap whenever this applies:
+            <p style={{ fontSize: '0.9rem', marginBottom: 12 }}>
+              You are: <strong>{user.display_name || user.email}</strong>
             </p>
-            <button
-              type="button"
-              className="blink-btn blink-btn-primary blink-big-button"
-              onClick={() => handlePress(mainControl)}
-            >
-              {mainControl.label}
-            </button>
+            {mainControl ? (
+              <>
+                <p style={{ fontSize: '0.9rem', marginBottom: 10 }}>
+                  Tap whenever this applies:
+                </p>
+                <button
+                  type="button"
+                  className="blink-btn blink-btn-primary blink-big-button"
+                  onClick={() => handlePress(mainControl)}
+                >
+                  {mainControl.label}
+                </button>
+              </>
+            ) : (
+              <p>No controls configured for this session.</p>
+            )}
           </>
         ) : (
-          <p>No controls configured for this session.</p>
+          <>
+            <p style={{ fontSize: '0.9rem', color: '#b91c1c', marginBottom: 12 }}>
+              You must create an account before joining a session.<br />
+              <a href="/" style={{ color: '#2563eb', textDecoration: 'underline' }}>Go to home page</a>
+            </p>
+          </>
         )}
-
         {status && <p className="blink-status">{status}</p>}
       </div>
     </div>

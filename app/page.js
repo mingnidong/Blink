@@ -2,6 +2,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { QRCodeSVG } from 'qrcode.react';
 
 const STORAGE_KEY = 'blink_user';
 
@@ -18,6 +19,16 @@ export default function HomePage() {
   const [loadingSessions, setLoadingSessions] = useState(false);
 
   // Load stored user from localStorage
+  function handleLogout() {
+    setUser(null);
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // ignore
+    }
+    setStatus('Logged out');
+  }
+
   useEffect(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
@@ -190,12 +201,43 @@ export default function HomePage() {
             Logged in as{' '}
             <strong>{user.display_name || user.email}</strong>
           </p>
+          <button
+            className="blink-btn blink-btn-secondary"
+            type="button"
+            onClick={handleLogout}
+            style={{ marginTop: 8 }}
+          >
+            Logout
+          </button>
         </section>
       )}
 
+      {/* Join section - moved above Host */}
+      <section className="blink-card">
+        <h2>Join a session</h2>
+        <p style={{ fontSize: '0.9rem', color: '#6b7280', marginTop: 4 }}>
+          Enter the join code to open the participant view (you still must create an account to send events).
+        </p>
+        <form onSubmit={handleGoJoin} style={{ marginTop: 10 }}>
+          <div className="blink-field">
+            <label className="blink-label">Join code</label>
+            <input
+              className="blink-input"
+              value={joinCode}
+              onChange={e => setJoinCode(e.target.value)}
+              required
+              placeholder="ABC123"
+            />
+          </div>
+          <button className="blink-btn blink-btn-primary" type="submit">
+            Join as participant
+          </button>
+        </form>
+      </section>
+
       {user && (
         <section className="blink-card">
-          <h2>Step 2 · Host a Blink session</h2>
+          <h2>Host a Blink session</h2>
           <p style={{ fontSize: '0.9rem', color: '#6b7280', marginTop: 4 }}>
             Creates a session with a single “Confused” button for now.
           </p>
@@ -220,6 +262,12 @@ export default function HomePage() {
               <div style={{ fontSize: '0.9rem', marginBottom: 6 }}>
                 Join code:{' '}
                 <strong>{createdSession.joinCode}</strong>
+              </div>
+              <div style={{ marginBottom: 12 }}>
+                <QRCodeSVG value={createdSession.joinCode} size={128} />
+                <div style={{ fontSize: '0.8rem', color: '#6b7280', marginTop: 4 }}>
+                  Scan to join session
+                </div>
               </div>
               <div className="blink-row">
                 <button
@@ -339,27 +387,6 @@ export default function HomePage() {
         </section>
       )}
 
-      <section className="blink-card">
-        <h2>Step 3 · Share the code</h2>
-        <p style={{ fontSize: '0.9rem', color: '#6b7280', marginTop: 4 }}>
-          Students go to the join page and enter the code.
-        </p>
-        <form onSubmit={handleGoJoin} style={{ marginTop: 10 }}>
-          <div className="blink-field">
-            <label className="blink-label">Join code</label>
-            <input
-              className="blink-input"
-              value={joinCode}
-              onChange={e => setJoinCode(e.target.value)}
-              required
-              placeholder="ABC123"
-            />
-          </div>
-          <button className="blink-btn blink-btn-primary" type="submit">
-            Join as participant
-          </button>
-        </form>
-      </section>
 
       {status && <p className="blink-status">{status}</p>}
     </div>
