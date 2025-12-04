@@ -18,7 +18,6 @@ export default function HomePage() {
   const [sessions, setSessions] = useState([]);
   const [loadingSessions, setLoadingSessions] = useState(false);
 
-  // Load stored user from localStorage
   function handleLogout() {
     setUser(null);
     try {
@@ -40,7 +39,6 @@ export default function HomePage() {
     }
   }, []);
 
-  // Fetch sessions for this user
   useEffect(() => {
     if (!user) return;
 
@@ -80,7 +78,7 @@ export default function HomePage() {
     } catch {
       // ignore
     }
-    setStatus('Account saved locally');
+    setStatus('Account created');
   }
 
   async function handleCreateSession(e) {
@@ -108,9 +106,8 @@ export default function HomePage() {
     }
     const data = await res.json();
     setCreatedSession(data);
-    setStatus(`Session created with code ${data.joinCode}`);
+    setStatus(`Session created`);
 
-    // Refresh list of sessions
     try {
       const listRes = await fetch(`/api/sessions?hostUserId=${user.id}`);
       if (listRes.ok) {
@@ -141,7 +138,6 @@ export default function HomePage() {
       setStatus('Error ending session');
       return;
     }
-    // Refresh sessions list
     if (!user) return;
     const listRes = await fetch(`/api/sessions?hostUserId=${user.id}`);
     if (listRes.ok) {
@@ -154,241 +150,460 @@ export default function HomePage() {
   const pastSessions = sessions.filter(s => !!s.ended_at);
 
   return (
-    <div className="blink-root">
-      <header style={{ marginBottom: 20 }}>
-        <h1 style={{ marginBottom: 4 }}>Blink</h1>
-        <p style={{ margin: 0, color: '#4b5563', fontSize: '0.95rem' }}>
-          Let your audience tap once when they are lost. You get a timeline of confusion.
-        </p>
-      </header>
-
-      {!user && (
-        <section className="blink-card">
-          <h2>Step 1 · Set up your account</h2>
-          <p style={{ fontSize: '0.9rem', color: '#6b7280', marginTop: 4 }}>
-            This just stores your email and name locally and in the profiles table.
-          </p>
-          <form onSubmit={handleRegister} style={{ marginTop: 10 }}>
-            <div className="blink-field">
-              <label className="blink-label">Email</label>
-              <input
-                className="blink-input"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                required
-                type="email"
-              />
-            </div>
-            <div className="blink-field">
-              <label className="blink-label">Name (optional)</label>
-              <input
-                className="blink-input"
-                value={displayName}
-                onChange={e => setDisplayName(e.target.value)}
-              />
-            </div>
-            <button className="blink-btn blink-btn-primary" type="submit">
-              Save account
-            </button>
-          </form>
-        </section>
-      )}
-
-      {user && (
-        <section className="blink-card">
-          <h2>Account</h2>
-          <p style={{ margin: '4px 0 0 0', fontSize: '0.95rem' }}>
-            Logged in as{' '}
-            <strong>{user.display_name || user.email}</strong>
-          </p>
-          <button
-            className="blink-btn blink-btn-secondary"
-            type="button"
-            onClick={handleLogout}
-            style={{ marginTop: 8 }}
-          >
-            Logout
-          </button>
-        </section>
-      )}
-
-      {/* Join section - moved above Host */}
-      <section className="blink-card">
-        <h2>Join a session</h2>
-        <p style={{ fontSize: '0.9rem', color: '#6b7280', marginTop: 4 }}>
-          Enter the join code to open the participant view (you still must create an account to send events).
-        </p>
-        <form onSubmit={handleGoJoin} style={{ marginTop: 10 }}>
-          <div className="blink-field">
-            <label className="blink-label">Join code</label>
-            <input
-              className="blink-input"
-              value={joinCode}
-              onChange={e => setJoinCode(e.target.value)}
-              required
-              placeholder="ABC123"
-            />
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f0f9ff 0%, #f3e8ff 100%)' }}>
+      <div style={{ maxWidth: '900px', margin: '0 auto', padding: '24px 16px' }}>
+        <div style={{ marginBottom: 40 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+            <div style={{ fontSize: '2.5rem' }}>👁️</div>
+            <h1 style={{ margin: 0, fontSize: '2.5rem', fontWeight: 700, background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              Blink
+            </h1>
           </div>
-          <button className="blink-btn blink-btn-primary" type="submit">
-            Join as participant
-          </button>
-        </form>
-      </section>
-
-      {user && (
-        <section className="blink-card">
-          <h2>Host a Blink session</h2>
-          <p style={{ fontSize: '0.9rem', color: '#6b7280', marginTop: 4 }}>
-            Creates a session with a single “Confused” button for now.
+          <p style={{ margin: '8px 0 0 0', color: '#64748b', fontSize: '1rem' }}>
+            Let your audience tap once when they are lost. You get a timeline of confusion.
           </p>
-          <form onSubmit={handleCreateSession} style={{ marginTop: 10 }}>
-            <div className="blink-field">
-              <label className="blink-label">Session title</label>
+        </div>
+
+        {!user && (
+          <div style={{
+            background: '#fff',
+            borderRadius: 12,
+            padding: 28,
+            marginBottom: 24,
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.07)',
+            border: '1px solid #e2e8f0'
+          }}>
+            <h2 style={{ margin: '0 0 8px 0', fontSize: '1.3rem', fontWeight: 700, color: '#1e293b' }}>
+              👤 Create your account
+            </h2>
+            <p style={{ margin: '4px 0 16px 0', color: '#64748b', fontSize: '0.95rem' }}>
+              Your email and name are stored locally and in our database for session participation.
+            </p>
+            <form onSubmit={handleRegister}>
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#1e293b', marginBottom: 6 }}>Email</label>
+                <input
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  required
+                  type="email"
+                  placeholder="you@example.com"
+                  style={{
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    borderRadius: 8,
+                    border: '1px solid #cbd5e1',
+                    padding: '10px 12px',
+                    fontSize: '0.95rem',
+                    transition: 'border-color 0.2s'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                  onBlur={(e) => e.target.style.borderColor = '#cbd5e1'}
+                />
+              </div>
+              <div style={{ marginBottom: 20 }}>
+                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#1e293b', marginBottom: 6 }}>Name (optional)</label>
+                <input
+                  value={displayName}
+                  onChange={e => setDisplayName(e.target.value)}
+                  placeholder="Your name"
+                  style={{
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    borderRadius: 8,
+                    border: '1px solid #cbd5e1',
+                    padding: '10px 12px',
+                    fontSize: '0.95rem',
+                    transition: 'border-color 0.2s'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                  onBlur={(e) => e.target.style.borderColor = '#cbd5e1'}
+                />
+              </div>
+              <button
+                type="submit"
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 8,
+                  cursor: 'pointer',
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
+                  transition: 'transform 0.2s'
+                }}
+                onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
+                onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
+              >
+                Create account
+              </button>
+            </form>
+          </div>
+        )}
+
+        {user && (
+          <div style={{
+            background: '#fff',
+            borderRadius: 12,
+            padding: 28,
+            marginBottom: 24,
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.07)',
+            border: '1px solid #e2e8f0'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h2 style={{ margin: '0 0 4px 0', fontSize: '1.3rem', fontWeight: 700, color: '#1e293b' }}>
+                  👋 Welcome, {user.display_name || user.email}
+                </h2>
+                <p style={{ margin: 0, color: '#64748b', fontSize: '0.9rem' }}>You're logged in and ready to go</p>
+              </div>
+              <button
+                type="button"
+                onClick={handleLogout}
+                style={{
+                  padding: '8px 16px',
+                  background: '#f1f5f9',
+                  color: '#64748b',
+                  border: '1px solid #e2e8f0',
+                  borderRadius: 8,
+                  cursor: 'pointer',
+                  fontSize: '0.9rem',
+                  fontWeight: 600,
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#e2e8f0'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = '#f1f5f9'}
+              >
+                Logout
+              </button>
+            </div>
+          </div>
+        )}
+
+        <div style={{
+          background: '#fff',
+          borderRadius: 12,
+          padding: 28,
+          marginBottom: 24,
+          boxShadow: '0 4px 6px rgba(0, 0, 0, 0.07)',
+          border: '1px solid #e2e8f0'
+        }}>
+          <h2 style={{ margin: '0 0 8px 0', fontSize: '1.3rem', fontWeight: 700, color: '#1e293b' }}>
+            🔗 Join a session
+          </h2>
+          <p style={{ margin: '4px 0 16px 0', color: '#64748b', fontSize: '0.95rem' }}>
+            Enter a join code to participate in a live session
+          </p>
+          <form onSubmit={handleGoJoin}>
+            <div style={{ marginBottom: 16 }}>
+              <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#1e293b', marginBottom: 6 }}>Join code</label>
               <input
-                className="blink-input"
-                value={title}
-                onChange={e => setTitle(e.target.value)}
+                value={joinCode}
+                onChange={e => setJoinCode(e.target.value)}
                 required
-                placeholder="CIS 550 – Indexing lecture"
+                placeholder="ABC123"
+                style={{
+                  width: '100%',
+                  boxSizing: 'border-box',
+                  borderRadius: 8,
+                  border: '1px solid #cbd5e1',
+                  padding: '10px 12px',
+                  fontSize: '0.95rem',
+                  textTransform: 'uppercase',
+                  fontWeight: 600,
+                  transition: 'border-color 0.2s'
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                onBlur={(e) => e.target.style.borderColor = '#cbd5e1'}
               />
             </div>
-            <button className="blink-btn blink-btn-primary" type="submit">
-              Create session
+            <button
+              type="submit"
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                background: 'linear-gradient(135deg, #06b6d4 0%, #0891b2 100%)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 8,
+                cursor: 'pointer',
+                fontSize: '1rem',
+                fontWeight: 600,
+                boxShadow: '0 4px 12px rgba(6, 182, 212, 0.3)',
+                transition: 'transform 0.2s'
+              }}
+              onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
+              onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
+            >
+              Join as participant
             </button>
           </form>
+        </div>
 
-          {createdSession && (
-            <div style={{ marginTop: 12 }}>
-              <div style={{ fontSize: '0.9rem', marginBottom: 6 }}>
-                Join code:{' '}
-                <strong>{createdSession.joinCode}</strong>
+        {user && (
+          <div style={{
+            background: '#fff',
+            borderRadius: 12,
+            padding: 28,
+            marginBottom: 24,
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.07)',
+            border: '1px solid #e2e8f0'
+          }}>
+            <h2 style={{ margin: '0 0 8px 0', fontSize: '1.3rem', fontWeight: 700, color: '#1e293b' }}>
+              🎬 Host a new session
+            </h2>
+            <p style={{ margin: '4px 0 16px 0', color: '#64748b', fontSize: '0.95rem' }}>
+              Create a session with a "Confused" button for your students to use
+            </p>
+            <form onSubmit={handleCreateSession}>
+              <div style={{ marginBottom: 16 }}>
+                <label style={{ display: 'block', fontSize: '0.9rem', fontWeight: 600, color: '#1e293b', marginBottom: 6 }}>Session title</label>
+                <input
+                  value={title}
+                  onChange={e => setTitle(e.target.value)}
+                  required
+                  placeholder="CIS 550 – Indexing Lecture"
+                  style={{
+                    width: '100%',
+                    boxSizing: 'border-box',
+                    borderRadius: 8,
+                    border: '1px solid #cbd5e1',
+                    padding: '10px 12px',
+                    fontSize: '0.95rem',
+                    transition: 'border-color 0.2s'
+                  }}
+                  onFocus={(e) => e.target.style.borderColor = '#3b82f6'}
+                  onBlur={(e) => e.target.style.borderColor = '#cbd5e1'}
+                />
               </div>
-              <div style={{ marginBottom: 12 }}>
-                <QRCodeSVG value={createdSession.joinCode} size={128} />
-                <div style={{ fontSize: '0.8rem', color: '#6b7280', marginTop: 4 }}>
-                  Scan to join session
+              <button
+                type="submit"
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 8,
+                  cursor: 'pointer',
+                  fontSize: '1rem',
+                  fontWeight: 600,
+                  boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+                  transition: 'transform 0.2s'
+                }}
+                onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
+                onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
+              >
+                Create session
+              </button>
+            </form>
+
+            {createdSession && (
+              <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid #e2e8f0' }}>
+                <div style={{ marginBottom: 16 }}>
+                  <p style={{ margin: '0 0 8px 0', fontSize: '0.9rem', color: '#64748b' }}>Join code:</p>
+                  <div style={{
+                    background: '#f8fafc',
+                    border: '2px dashed #cbd5e1',
+                    borderRadius: 8,
+                    padding: '12px',
+                    fontSize: '1.5rem',
+                    fontWeight: 700,
+                    textAlign: 'center',
+                    color: '#1e293b',
+                    fontFamily: 'monospace'
+                  }}>
+                    {createdSession.joinCode}
+                  </div>
                 </div>
-              </div>
-              <div className="blink-row">
+
+                <div style={{ marginBottom: 16, textAlign: 'center' }}>
+                  <div style={{ display: 'inline-block', background: '#fff', padding: 12, borderRadius: 8, border: '1px solid #e2e8f0' }}>
+                    <QRCodeSVG value={createdSession.joinCode} size={160} level="H" />
+                  </div>
+                  <p style={{ margin: '8px 0 0 0', color: '#64748b', fontSize: '0.85rem' }}>Scan to join</p>
+                </div>
+
                 <button
-                  className="blink-btn blink-btn-secondary"
                   type="button"
                   onClick={() => handleGoHost(createdSession.sessionId)}
+                  style={{
+                    width: '100%',
+                    padding: '12px 16px',
+                    background: 'linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 8,
+                    cursor: 'pointer',
+                    fontSize: '1rem',
+                    fontWeight: 600,
+                    boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
+                    transition: 'transform 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
+                  onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
                 >
-                  Open host view
+                  → Open host view
                 </button>
               </div>
-            </div>
-          )}
-        </section>
-      )}
+            )}
+          </div>
+        )}
 
-      {user && (
-        <section className="blink-card">
-          <h2>Your sessions</h2>
-          {loadingSessions && (
-            <p style={{ fontSize: '0.9rem', color: '#6b7280' }}>Loading…</p>
-          )}
+        {user && (
+          <div style={{
+            background: '#fff',
+            borderRadius: 12,
+            padding: 28,
+            marginBottom: 24,
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.07)',
+            border: '1px solid #e2e8f0'
+          }}>
+            <h2 style={{ margin: '0 0 8px 0', fontSize: '1.3rem', fontWeight: 700, color: '#1e293b' }}>
+              📋 Your sessions
+            </h2>
 
-          {!loadingSessions && activeSessions.length === 0 && pastSessions.length === 0 && (
-            <p style={{ fontSize: '0.9rem', color: '#6b7280' }}>
-              No sessions yet. Create your first Blink above.
-            </p>
-          )}
+            {loadingSessions && (
+              <p style={{ color: '#64748b', fontSize: '0.95rem' }}>⏳ Loading sessions…</p>
+            )}
 
-          {!loadingSessions && activeSessions.length > 0 && (
-            <>
-              <h3 style={{ margin: '8px 0 4px 0', fontSize: '0.95rem' }}>Active</h3>
-              {activeSessions.map(s => (
-                <div
-                  key={s.id}
-                  style={{
-                    padding: '6px 0',
-                    borderBottom: '1px solid #e5e7eb',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    gap: 8
-                  }}
-                >
-                  <div>
-                    <div style={{ fontSize: '0.95rem' }}>{s.title}</div>
-                    <div
-                      style={{
-                        fontSize: '0.8rem',
-                        color: '#6b7280',
-                        marginTop: 2
-                      }}
-                    >
-                      Code: <strong>{s.join_code}</strong>
+            {!loadingSessions && activeSessions.length === 0 && pastSessions.length === 0 && (
+              <p style={{ color: '#94a3b8', fontSize: '0.95rem' }}>No sessions yet. Create your first Blink above.</p>
+            )}
+
+            {!loadingSessions && activeSessions.length > 0 && (
+              <div style={{ marginTop: 16 }}>
+                <h3 style={{ margin: '0 0 12px 0', fontSize: '1rem', fontWeight: 700, color: '#10b981' }}>🟢 Active</h3>
+                {activeSessions.map((s, idx) => (
+                  <div
+                    key={s.id}
+                    style={{
+                      padding: 16,
+                      background: '#f8fafc',
+                      borderRadius: 8,
+                      marginBottom: idx < activeSessions.length - 1 ? 12 : 0,
+                      border: '1px solid #e2e8f0'
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: 12 }}>
+                      <div>
+                        <h4 style={{ margin: '0 0 4px 0', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>{s.title}</h4>
+                        <p style={{ margin: '0 0 8px 0', fontSize: '0.85rem', color: '#64748b' }}>
+                          Code: <code style={{ background: '#fff', padding: '2px 6px', borderRadius: 4, fontFamily: 'monospace' }}>{s.join_code}</code>
+                        </p>
+                      </div>
+                      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end', minWidth: 200 }}>
+                        <button
+                          type="button"
+                          onClick={() => handleGoHost(s.id)}
+                          style={{
+                            padding: '8px 14px',
+                            background: '#e0f2fe',
+                            color: '#0369a1',
+                            border: '1px solid #7dd3fc',
+                            borderRadius: 6,
+                            cursor: 'pointer',
+                            fontSize: '0.85rem',
+                            fontWeight: 600,
+                            transition: 'background-color 0.2s'
+                          }}
+                          onMouseEnter={(e) => e.target.style.backgroundColor = '#cffafe'}
+                          onMouseLeave={(e) => e.target.style.backgroundColor = '#e0f2fe'}
+                        >
+                          👁️ View
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleEndSession(s.id)}
+                          style={{
+                            padding: '8px 14px',
+                            background: '#fee2e2',
+                            color: '#991b1b',
+                            border: '1px solid #fca5a5',
+                            borderRadius: 6,
+                            cursor: 'pointer',
+                            fontSize: '0.85rem',
+                            fontWeight: 600,
+                            transition: 'background-color 0.2s'
+                          }}
+                          onMouseEnter={(e) => e.target.style.backgroundColor = '#fecaca'}
+                          onMouseLeave={(e) => e.target.style.backgroundColor = '#fee2e2'}
+                        >
+                          ⏹️ End
+                        </button>
+                      </div>
                     </div>
                   </div>
-                  <div className="blink-row">
-                    <button
-                      className="blink-btn blink-btn-secondary"
-                      type="button"
-                      onClick={() => handleGoHost(s.id)}
-                    >
-                      Host view
-                    </button>
-                    <button
-                      className="blink-btn blink-btn-primary"
-                      type="button"
-                      onClick={() => handleEndSession(s.id)}
-                    >
-                      End
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </>
-          )}
+                ))}
+              </div>
+            )}
 
-          {!loadingSessions && pastSessions.length > 0 && (
-            <>
-              <h3 style={{ margin: '10px 0 4px 0', fontSize: '0.95rem' }}>Past</h3>
-              {pastSessions.map(s => (
-                <div
-                  key={s.id}
-                  style={{
-                    padding: '6px 0',
-                    borderBottom: '1px solid #e5e7eb',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    gap: 8
-                  }}
-                >
-                  <div>
-                    <div style={{ fontSize: '0.95rem' }}>{s.title}</div>
-                    <div
-                      style={{
-                        fontSize: '0.8rem',
-                        color: '#6b7280',
-                        marginTop: 2
-                      }}
-                    >
-                      Code: <strong>{s.join_code}</strong>
+            {!loadingSessions && pastSessions.length > 0 && (
+              <div style={{ marginTop: 20, paddingTop: 20, borderTop: '1px solid #e2e8f0' }}>
+                <h3 style={{ margin: '0 0 12px 0', fontSize: '1rem', fontWeight: 700, color: '#64748b' }}>🕐 Past</h3>
+                {pastSessions.map((s, idx) => (
+                  <div
+                    key={s.id}
+                    style={{
+                      padding: 16,
+                      background: '#f1f5f9',
+                      borderRadius: 8,
+                      marginBottom: idx < pastSessions.length - 1 ? 12 : 0,
+                      border: '1px solid #e2e8f0',
+                      opacity: 0.7
+                    }}
+                  >
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', gap: 12 }}>
+                      <div>
+                        <h4 style={{ margin: '0 0 4px 0', fontSize: '1rem', fontWeight: 700, color: '#1e293b' }}>{s.title}</h4>
+                        <p style={{ margin: '0 0 8px 0', fontSize: '0.85rem', color: '#64748b' }}>
+                          Code: <code style={{ background: '#fff', padding: '2px 6px', borderRadius: 4, fontFamily: 'monospace' }}>{s.join_code}</code>
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleGoHost(s.id)}
+                        style={{
+                          padding: '8px 14px',
+                          background: '#fff',
+                          color: '#64748b',
+                          border: '1px solid #cbd5e1',
+                          borderRadius: 6,
+                          cursor: 'pointer',
+                          fontSize: '0.85rem',
+                          fontWeight: 600,
+                          transition: 'background-color 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.target.style.backgroundColor = '#f8fafc'}
+                        onMouseLeave={(e) => e.target.style.backgroundColor = '#fff'}
+                      >
+                        📊 View
+                      </button>
                     </div>
                   </div>
-                  <div>
-                    <button
-                      className="blink-btn blink-btn-secondary"
-                      type="button"
-                      onClick={() => handleGoHost(s.id)}
-                    >
-                      View
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </>
-          )}
-        </section>
-      )}
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
-
-      {status && <p className="blink-status">{status}</p>}
+        {status && (
+          <div style={{
+            background: '#dbeafe',
+            border: '1px solid #7dd3fc',
+            borderRadius: 8,
+            padding: 12,
+            color: '#0c4a6e',
+            fontSize: '0.9rem',
+            marginTop: 16
+          }}>
+            ℹ️ {status}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

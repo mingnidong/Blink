@@ -90,157 +90,260 @@ export default function HostPage() {
     return { ticks: t };
   }, [summary, heatBuckets]);
 
+  // Export session data as JSON file
+  const handleExportData = () => {
+    if (!summary) {
+      alert('No data to export yet.');
+      return;
+    }
+
+    const exportData = {
+      sessionId: id,
+      exportedAt: new Date().toISOString(),
+      bucketSize: summary.bucketSize,
+      buttonSeries: summary.buttonSeries || [],
+      sliderSeries: summary.sliderSeries || [],
+      participants: summary.participants || []
+    };
+
+    const dataStr = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `session-${id}-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   return (
-    <div className="blink-root">
-      <div className="blink-card">
-        <h1>Host view</h1>
-        <p style={{ fontSize: '0.9rem', color: '#6b7280' }}>
-          Session ID: <code>{id}</code>
-          <br />
-          Data refreshes every 3 seconds. Bucket size: 5 seconds.
-        </p>
-      </div>
-
-      {!summary && (
-        <div className="blink-card">
-          <p>Loading summary…</p>
-        </div>
-      )}
-
-      {summary && (
-        <section className="blink-card blink-summary-section">
-          <h2>Confusion timeline</h2>
-          <p style={{ fontSize: '0.9rem', color: '#6b7280', marginTop: 4 }}>
-            Each cell is a 5-second window. Darker = more “Confused” presses.
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f0f9ff 0%, #f3e8ff 100%)' }}>
+      <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '24px 16px' }}>
+        <div style={{ marginBottom: 32 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+            <div style={{ fontSize: '2rem' }}>👁️</div>
+            <h1 style={{ margin: 0, fontSize: '2rem', fontWeight: 700, background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              Blink Host View
+            </h1>
+          </div>
+          <p style={{ margin: '8px 0 0 0', color: '#64748b', fontSize: '0.95rem' }}>
+            Session ID: <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4, fontFamily: 'monospace' }}>{id}</code>
+            <span style={{ marginLeft: 12, color: '#94a3b8' }}>• Auto-refresh every 3 seconds</span>
           </p>
+        </div>
 
-          {heatBuckets.length === 0 || maxCount === 0 ? (
-            <p style={{ fontSize: '0.9rem', color: '#6b7280', marginTop: 8 }}>
-              No button presses yet.
-            </p>
-          ) : (
-            <>
-              {/* Histogram (gradient bars) with axes */}
-              <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end', marginTop: 12 }}>
-                {/* Y axis labels (simple) */}
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', minWidth: 40, color: '#6b7280', fontSize: '0.8rem' }}>
-                  <div style={{ marginBottom: 6 }}>{maxCount}</div>
-                  <div style={{ marginTop: 'auto', marginBottom: 6 }}>{Math.ceil(maxCount / 2)}</div>
-                  <div>0</div>
+        <div style={{ display: 'flex', gap: 12, marginBottom: 28 }}>
+          <button
+            onClick={handleExportData}
+            style={{
+              padding: '10px 16px',
+              background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+              color: '#fff',
+              border: 'none',
+              borderRadius: 8,
+              cursor: 'pointer',
+              fontSize: '0.95rem',
+              fontWeight: 600,
+              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+              transition: 'transform 0.2s',
+            }}
+            onMouseEnter={(e) => e.target.style.transform = 'translateY(-2px)'}
+            onMouseLeave={(e) => e.target.style.transform = 'translateY(0)'}
+          >
+            ⬇️ Export data as JSON
+          </button>
+        </div>
+
+        {!summary && (
+          <div style={{
+            background: '#fff',
+            borderRadius: 12,
+            padding: 40,
+            textAlign: 'center',
+            boxShadow: '0 4px 6px rgba(0, 0, 0, 0.07)',
+            border: '1px solid #e2e8f0'
+          }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: 16 }}>⏳</div>
+            <p style={{ fontSize: '1.1rem', color: '#64748b', margin: 0 }}>Loading session data…</p>
+          </div>
+        )}
+
+        {summary && (
+          <>
+            <div style={{
+              background: '#fff',
+              borderRadius: 12,
+              padding: 24,
+              marginBottom: 24,
+              boxShadow: '0 4px 6px rgba(0, 0, 0, 0.07)',
+              border: '1px solid #e2e8f0'
+            }}>
+              <div style={{ marginBottom: 20 }}>
+                <h2 style={{ margin: '0 0 8px 0', fontSize: '1.3rem', fontWeight: 700, color: '#1e293b' }}>
+                  📊 Confusion Timeline
+                </h2>
+                <p style={{ margin: 0, color: '#64748b', fontSize: '0.9rem' }}>
+                  Real-time visualization of student confusion levels (5-second buckets)
+                </p>
+              </div>
+
+              {heatBuckets.length === 0 || maxCount === 0 ? (
+                <div style={{ textAlign: 'center', padding: '40px 20px', background: '#f8fafc', borderRadius: 8 }}>
+                  <div style={{ fontSize: '2rem', marginBottom: 12 }}>👂</div>
+                  <p style={{ color: '#64748b', margin: 0 }}>Waiting for student responses…</p>
                 </div>
+              ) : (
+                <>
+                  <div style={{ display: 'flex', gap: 12, alignItems: 'flex-end', marginTop: 16 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', minWidth: 50, color: '#64748b', fontSize: '0.8rem', fontWeight: 600 }}>
+                      <div style={{ marginBottom: 6 }}>{maxCount}</div>
+                      <div style={{ marginTop: 'auto', marginBottom: 6 }}>{Math.ceil(maxCount / 2)}</div>
+                      <div>0</div>
+                    </div>
 
-                {/* Bars + x-axis */}
-                <div style={{ flex: 1 }}>
-                  {/* SVG histogram: viewBox width = buckets, height = maxCount (scaled) */}
-                  <div style={{ height: 160 }}>
-                    <svg viewBox={`0 0 ${Math.max(heatBuckets.length, 1)} ${Math.max(maxCount, 1)}`} preserveAspectRatio="none" style={{ width: '100%', height: '100%' }}>
-                      <defs>
-                        <linearGradient id="histGrad" x1="0" x2="0" y1="0" y2="1">
-                          <stop offset="0%" stopColor="#2563eb" stopOpacity="0.95" />
-                          <stop offset="100%" stopColor="#4f46e5" stopOpacity="0.6" />
-                        </linearGradient>
-                        <linearGradient id="emptyGrad" x1="0" x2="0" y1="0" y2="1">
-                          <stop offset="0%" stopColor="#f3f4f6" />
-                          <stop offset="100%" stopColor="#e5e7eb" />
-                        </linearGradient>
-                      </defs>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ height: 200, marginBottom: 12 }}>
+                        <svg viewBox={`0 0 ${Math.max(heatBuckets.length, 1)} ${Math.max(maxCount, 1)}`} preserveAspectRatio="none" style={{ width: '100%', height: '100%' }}>
+                          <defs>
+                            <linearGradient id="histGrad" x1="0" x2="0" y1="0" y2="1">
+                              <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.95" />
+                              <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.6" />
+                            </linearGradient>
+                            <linearGradient id="emptyGrad" x1="0" x2="0" y1="0" y2="1">
+                              <stop offset="0%" stopColor="#f0f4f8" />
+                              <stop offset="100%" stopColor="#e2e8f0" />
+                            </linearGradient>
+                          </defs>
 
-                      {heatBuckets.map((bucket, i) => {
-                        const count = bucket.totalCount || 0;
-                        const x = i + 0.1; // small padding
-                        const w = 0.8; // width in viewBox units
-                        const h = Math.max(0.01, count); // avoid zero height in viewBox
-                        const y = Math.max(0, (Math.max(maxCount, 1) - h));
-                        const fill = count === 0 ? 'url(#emptyGrad)' : 'url(#histGrad)';
-                        return (
-                          <rect
-                            key={bucket.bucket}
-                            x={x}
-                            y={y}
-                            width={w}
-                            height={h}
-                            fill={fill}
-                            rx={0.12}
-                            title={`t=${bucket.bucket * summary.bucketSize}–${(bucket.bucket + 1) * summary.bucketSize}s, count=${count}`}
-                          />
-                        );
-                      })}
-                    </svg>
+                          {heatBuckets.map((bucket, i) => {
+                            const count = bucket.totalCount || 0;
+                            const x = i + 0.1;
+                            const w = 0.8;
+                            const h = Math.max(0.01, count);
+                            const y = Math.max(0, (Math.max(maxCount, 1) - h));
+                            const fill = count === 0 ? 'url(#emptyGrad)' : 'url(#histGrad)';
+                            return (
+                              <rect
+                                key={bucket.bucket}
+                                x={x}
+                                y={y}
+                                width={w}
+                                height={h}
+                                fill={fill}
+                                rx={0.12}
+                                title={`t=${bucket.bucket * summary.bucketSize}–${(bucket.bucket + 1) * summary.bucketSize}s, count=${count}`}
+                              />
+                            );
+                          })}
+                        </svg>
+                      </div>
 
-                    {/* histogram rendered above; debug/info removed */}
-                  </div>
-
-                  {/* X-axis ticks */}
-                  <div style={{ display: 'flex', marginTop: 8, alignItems: 'center', gap: 4 }}>
-                    {/* tick labels laid out across the same width as bars */}
-                    <div style={{ width: 40 }} />
-                    <div style={{ flex: 1, position: 'relative' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: '#6b7280' }}>
-                        {ticks.map((t, idx) => (
-                          <div key={t.bucket} style={{ textAlign: idx === ticks.length - 1 ? 'right' : 'left' }}>{t.label}</div>
-                        ))}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <div style={{ width: 50 }} />
+                        <div style={{ flex: 1, position: 'relative' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: '#94a3b8', fontWeight: 500 }}>
+                            {ticks.map((t, idx) => (
+                              <div key={t.bucket} style={{ textAlign: idx === ticks.length - 1 ? 'right' : 'left' }}>{t.label}</div>
+                            ))}
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
+                </>
+              )}
+            </div>
+
+            {summary.participants && summary.participants.length > 0 && (
+              <div style={{
+                background: '#fff',
+                borderRadius: 12,
+                padding: 24,
+                marginBottom: 24,
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.07)',
+                border: '1px solid #e2e8f0'
+              }}>
+                <div style={{ marginBottom: 20 }}>
+                  <h2 style={{ margin: '0 0 8px 0', fontSize: '1.3rem', fontWeight: 700, color: '#1e293b' }}>
+                    👥 Participants ({summary.participants.length})
+                  </h2>
+                  <p style={{ margin: 0, color: '#64748b', fontSize: '0.9rem' }}>
+                    Students in this session and their engagement
+                  </p>
+                </div>
+
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '2px solid #e2e8f0' }}>
+                        <th style={{ textAlign: 'left', padding: '12px 0', fontSize: '0.85rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Name</th>
+                        <th style={{ textAlign: 'left', padding: '12px 0', fontSize: '0.85rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Email</th>
+                        <th style={{ textAlign: 'right', padding: '12px 0', fontSize: '0.85rem', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Presses</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {summary.participants.map((p, idx) => (
+                        <tr key={p.userId} style={{ borderBottom: idx < summary.participants.length - 1 ? '1px solid #f1f5f9' : 'none' }}>
+                          <td style={{ padding: '12px 0', fontSize: '0.95rem', color: '#1e293b', fontWeight: 500 }}>
+                            {p.displayName || p.email || p.userId}
+                          </td>
+                          <td style={{ padding: '12px 0', fontSize: '0.9rem', color: '#64748b' }}>
+                            {p.email || '—'}
+                          </td>
+                          <td style={{ padding: '12px 0', textAlign: 'right' }}>
+                            <span style={{
+                              display: 'inline-block',
+                              background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                              color: '#fff',
+                              padding: '4px 12px',
+                              borderRadius: 20,
+                              fontSize: '0.85rem',
+                              fontWeight: 700
+                            }}>
+                              {p.count}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
               </div>
-            </>
-          )}
+            )}
 
-          {/* Raw counts removed; histogram provides the aggregated view. */}
-
-          {summary.sliderSeries && summary.sliderSeries.length > 0 && (
-            <div style={{ marginTop: 16 }}>
-              <h3 style={{ marginTop: 0 }}>Slider averages (raw)</h3>
-              <pre
-                style={{
-                  background: '#111',
-                  color: '#eee',
-                  padding: 10,
-                  borderRadius: 8,
-                  maxHeight: 260,
-                  overflow: 'auto',
-                  fontSize: '0.8rem'
-                }}
-              >
-                {JSON.stringify(summary.sliderSeries, null, 2)}
-              </pre>
-            </div>
-          )}
-
-          {/* Participants: show who joined and how many button presses they made */}
-          {summary.participants && summary.participants.length > 0 && (
-            <div style={{ marginTop: 20 }}>
-              <h3 style={{ marginTop: 0 }}>Participants</h3>
-              <p style={{ fontSize: '0.9rem', color: '#6b7280', marginTop: 4 }}>
-                Who joined the session and how many times they pressed the main button.
-              </p>
-              <div style={{ marginTop: 8 }}>
-                {/* Header row */}
-                <div style={{ display: 'flex', padding: '6px 0', borderBottom: '2px solid #e5e7eb', fontWeight: 600 }}>
-                  <div style={{ flex: 1 }}>Name</div>
-                  <div style={{ flex: 1 }}>Email</div>
-                  <div style={{ width: 90, textAlign: 'right' }}>Presses</div>
-                </div>
-                {summary.participants.map(p => (
-                  <div
-                    key={p.userId}
-                    style={{ display: 'flex', justifyContent: 'space-between', padding: '6px 0', borderBottom: '1px solid #eee', alignItems: 'center' }}
-                  >
-                    <div style={{ flex: 1, fontSize: '0.95rem' }}>
-                      {p.displayName || p.email || p.userId}
-                    </div>
-                    <div style={{ flex: 1, color: '#374151', wordBreak: 'break-word' }}>
-                      {p.email || '—'}
-                    </div>
-                    <div style={{ width: 90, textAlign: 'right', color: '#6b7280' }}>{p.count} presses</div>
-                  </div>
-                ))}
+            {summary.sliderSeries && summary.sliderSeries.length > 0 && (
+              <div style={{
+                background: '#fff',
+                borderRadius: 12,
+                padding: 24,
+                boxShadow: '0 4px 6px rgba(0, 0, 0, 0.07)',
+                border: '1px solid #e2e8f0'
+              }}>
+                <h2 style={{ margin: '0 0 16px 0', fontSize: '1.3rem', fontWeight: 700, color: '#1e293b' }}>
+                  📈 Raw Slider Data
+                </h2>
+                <pre
+                  style={{
+                    background: '#1e293b',
+                    color: '#e2e8f0',
+                    padding: 16,
+                    borderRadius: 8,
+                    maxHeight: 320,
+                    overflow: 'auto',
+                    fontSize: '0.8rem',
+                    lineHeight: '1.5',
+                    margin: 0
+                  }}
+                >
+                  {JSON.stringify(summary.sliderSeries, null, 2)}
+                </pre>
               </div>
-            </div>
-          )}
-        </section>
-      )}
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
