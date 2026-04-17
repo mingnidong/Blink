@@ -1,7 +1,7 @@
 # Blink
 
 Blink is a lightweight audience feedback tool.
-Nets 3120 Mingni Dong Amber He Anika Basu Emily Kang
+For Nets 3120. Created by Mingni Dong Amber He Anika Basu Emily Kang.
 Speakers create a session and share a code. Audience members tap a button when they are confused. The host sees a time-based view of confusion during the session.
 
 Built with:
